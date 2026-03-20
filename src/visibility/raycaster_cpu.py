@@ -99,10 +99,52 @@ class RaycasterCPU(Raycaster):
             t = t_min if t_min >= 0 else t_max
             if t >= 0:
                 point = ray.at(t)
+                # Calculate surface normal based on which face was hit
+                normal = self._calculate_surface_normal(point, ray, aabb)
                 return RayIntersection(
                     distance=t,
                     point=point,
-                    normal=np.array([0, 1, 0], dtype=np.float32)  # Placeholder
+                    normal=normal
                 )
 
         return None
+
+    def _calculate_surface_normal(self, hit_point, ray, aabb):
+        """
+        Calculate surface normal at hit point.
+
+        Args:
+            hit_point: 3D point where ray hit
+            ray: Ray that was cast
+            aabb: AABB that was hit
+
+        Returns:
+            Unit normal vector
+        """
+        # Determine which face was hit by finding closest distance
+        dists = np.array([
+            abs(hit_point[0] - aabb.min[0]),  # Left face (X-min)
+            abs(hit_point[0] - aabb.max[0]),  # Right face (X-max)
+            abs(hit_point[1] - aabb.min[1]),  # Front face (Y-min)
+            abs(hit_point[1] - aabb.max[1]),  # Back face (Y-max)
+            abs(hit_point[2] - aabb.min[2]),  # Bottom face (Z-min)
+            abs(hit_point[2] - aabb.max[2])   # Top face (Z-max)
+        ], dtype=np.float32)
+
+        min_dist_idx = np.argmin(dists)
+        normal = np.array([0, 0, 0], dtype=np.float32)
+
+        if min_dist_idx == 0:  # Left face (X-min)
+            normal[0] = -1
+        elif min_dist_idx == 1:  # Right face (X-max)
+            normal[0] = 1
+        elif min_dist_idx == 2:  # Front face (Y-min)
+            normal[1] = -1
+        elif min_dist_idx == 3:  # Back face (Y-max)
+            normal[1] = 1
+        elif min_dist_idx == 4:  # Bottom face (Z-min)
+            normal[2] = -1
+        else:  # Top face (Z-max)
+            normal[2] = 1
+
+        return normal
