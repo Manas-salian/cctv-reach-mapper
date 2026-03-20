@@ -17,13 +17,19 @@ class ShaderProgram:
 
     def _compile_shader(self, source, shader_type):
         """Compile a single shader."""
+        shader_name = {GL_VERTEX_SHADER: "Vertex", GL_FRAGMENT_SHADER: "Fragment", GL_GEOMETRY_SHADER: "Geometry"}.get(shader_type, "Unknown")
+
         shader = glCreateShader(shader_type)
         glShaderSource(shader, source)
         glCompileShader(shader)
 
         if not glGetShaderiv(shader, GL_COMPILE_STATUS):
             error = glGetShaderInfoLog(shader).decode()
-            raise ShaderCompileError(f"Compilation error:\n{error}")
+            raise ShaderCompileError(
+                f"{shader_name} shader compilation failed:\n"
+                f"Error: {error}\n"
+                f"Source:\n{source}"
+            )
 
         return shader
 
@@ -46,7 +52,13 @@ class ShaderProgram:
 
         if not glGetProgramiv(self.program_id, GL_LINK_STATUS):
             error = glGetProgramInfoLog(self.program_id).decode()
-            raise ShaderCompileError(f"Linking error:\n{error}")
+            raise ShaderCompileError(
+                f"Shader program linking failed:\n"
+                f"Error: {error}\n"
+                f"Vertex shader: {vertex_src[:100]}...\n"
+                f"Fragment shader: {fragment_src[:100]}...\n"
+                f"{f'Geometry shader: {geometry_src[:100]}...' if geometry_src else ''}"
+            )
 
         glDeleteShader(vertex)
         glDeleteShader(fragment)

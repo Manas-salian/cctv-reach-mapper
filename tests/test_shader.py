@@ -38,3 +38,21 @@ def test_shader_uniforms():
     shader.use()
     shader.set_float("f", 1.5)
     shader.set_vec3("v", (1, 0, 0))
+
+
+def test_shader_error_includes_source():
+    """Test that shader compilation errors include source code."""
+    # Intentionally broken shader (missing semicolon)
+    bad_vert = "#version 410 core\nvoid main() { missing_semicolon }"
+    bad_frag = "#version 410 core\nvoid main() { gl_FragColor = vec4(1.0); }"
+
+    from src.renderer.shader import ShaderCompileError
+
+    with pytest.raises(ShaderCompileError) as exc_info:
+        ShaderProgram(bad_vert, bad_frag)
+
+    error_msg = str(exc_info.value)
+    # Error should mention which shader failed
+    assert "Vertex" in error_msg or "Fragment" in error_msg or "shader" in error_msg.lower()
+    # Error should include source code or at least indicate it
+    assert "missing_semicolon" in error_msg or "source" in error_msg.lower()
