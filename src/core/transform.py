@@ -14,6 +14,9 @@ class Transform:
         self.scale = np.array(scale, dtype=np.float32)
         self.parent = None
 
+        # Validate scale
+        self._validate_scale()
+
     def get_matrix(self):
         """Compute transformation matrix."""
         roll = math.radians(self.rotation[0])
@@ -30,14 +33,30 @@ class Transform:
         combined = pos_mat * rot_mat * scale_mat
         return np.array(combined, dtype=np.float32)
 
+    def _validate_scale(self):
+        """Validate scale values (must be positive)."""
+        if np.any(self.scale <= 0):
+            raise ValueError("Scale values must be positive (> 0)")
+
     def set_position(self, position):
         """Set position."""
-        self.position = np.array(position, dtype=np.float32)
+        pos = np.array(position, dtype=np.float32)
+        if pos.shape != (3,):
+            raise TypeError("Position must be array-like with 3 elements")
+        self.position = pos
 
     def set_rotation(self, rotation):
         """Set rotation."""
-        self.rotation = np.array(rotation, dtype=np.float32)
+        rot = np.array(rotation, dtype=np.float32)
+        if rot.shape != (3,):
+            raise TypeError("Rotation must be array-like with 3 elements")
+        self.rotation = rot
 
     def set_scale(self, scale):
         """Set scale."""
-        self.scale = np.array(scale, dtype=np.float32)
+        scl = np.array(scale, dtype=np.float32)
+        if scl.shape != (3,):
+            raise TypeError("Scale must be array-like with 3 elements")
+        if np.any(scl <= 0):
+            raise ValueError("Scale values must be positive (> 0)")
+        self.scale = scl
