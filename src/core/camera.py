@@ -10,9 +10,20 @@ class Camera:
     def __init__(self, position, direction, fov_horizontal=90, fov_vertical=60,
                  max_range=20.0, aspect_ratio=16.0/9.0, near=0.1, far=100.0):
         """Initialize camera."""
+        # Validate direction
+        direction_norm = np.linalg.norm(direction)
+        if direction_norm < 1e-6:
+            raise ValueError("Direction vector cannot be zero length")
+
+        # Validate FOV
+        if fov_horizontal <= 0 or fov_horizontal >= 180:
+            raise ValueError("FOV horizontal must be > 0 and < 180 degrees")
+        if fov_vertical <= 0 or fov_vertical >= 180:
+            raise ValueError("FOV vertical must be > 0 and < 180 degrees")
+
         self.position = np.array(position, dtype=np.float32)
         self.direction = np.array(direction, dtype=np.float32)
-        self.direction = self.direction / np.linalg.norm(self.direction)
+        self.direction = self.direction / direction_norm
 
         self.fov_horizontal = fov_horizontal
         self.fov_vertical = fov_vertical
