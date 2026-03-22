@@ -25,29 +25,31 @@ class Room(SceneObject):
         """Create floor, ceiling, and wall meshes."""
         n = len(self.polygon)
 
-        # Floor (Y=0) - triangulated as fan from vertex 0
-        floor_vertices = np.hstack([
-            self.polygon,
-            np.zeros((n, 1), dtype=np.float32)
-        ])
+        # Floor (Y=0) — polygon is (x, z), need vertices as (x, 0, z)
+        floor_vertices = np.zeros((n, 3), dtype=np.float32)
+        floor_vertices[:, 0] = self.polygon[:, 0]   # X
+        floor_vertices[:, 1] = 0.0                   # Y = floor level
+        floor_vertices[:, 2] = self.polygon[:, 1]    # Z
+
         floor_indices = []
         for i in range(1, n - 1):
             floor_indices.extend([0, i, i + 1])
         floor_indices = np.array(floor_indices, dtype=np.uint32)
         self.floor_mesh = Mesh.from_vertices(floor_vertices, floor_indices)
 
-        # Ceiling (Y=height) - triangulated as fan
-        ceiling_vertices = np.hstack([
-            self.polygon,
-            np.full((n, 1), self.height, dtype=np.float32)
-        ])
+        # Ceiling (Y=height) — same XZ positions, Y = height
+        ceiling_vertices = np.zeros((n, 3), dtype=np.float32)
+        ceiling_vertices[:, 0] = self.polygon[:, 0]
+        ceiling_vertices[:, 1] = self.height
+        ceiling_vertices[:, 2] = self.polygon[:, 1]
+
         ceiling_indices = []
         for i in range(1, n - 1):
-            ceiling_indices.extend([0, i, i + 1])
+            ceiling_indices.extend([0, i + 1, i])  # Reversed winding for upward normal
         ceiling_indices = np.array(ceiling_indices, dtype=np.uint32)
         self.ceiling_mesh = Mesh.from_vertices(ceiling_vertices, ceiling_indices)
 
-        # Walls
+        # Walls — quads between floor and ceiling edges
         wall_vertices = []
         wall_indices = []
         idx = 0
