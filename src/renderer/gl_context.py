@@ -88,6 +88,14 @@ class GLContext:
         if not self._closed:
             glfw.poll_events()
 
+    def set_clear_color(self, r, g, b, a=1.0):
+        """Set clear color."""
+        glClearColor(r, g, b, a)
+
+    def clear(self):
+        """Clear color and depth buffers."""
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
     def set_viewport(self, width, height):
         """Set OpenGL viewport."""
         if self._closed:
@@ -138,7 +146,9 @@ class GLContext:
     def __del__(self):
         """Cleanup on deletion."""
         try:
-            self.close()
+            # Only attempt cleanup if GLFW is still initialized
+            if _glfw_initialized:
+                self.close()
         except Exception:
             pass  # Ignore errors during __del__
 

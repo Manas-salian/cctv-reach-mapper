@@ -4,7 +4,7 @@ import numpy as np
 from src.core.room import Room
 
 
-def test_room_creation():
+def test_room_creation(gl_context):
     """Test room creation."""
     polygon = [(0, 0), (10, 0), (10, 5), (0, 5)]
     room = Room("TestRoom", polygon, height=3.0)
@@ -12,14 +12,14 @@ def test_room_creation():
     assert room.get_aabb() is not None
 
 
-def test_room_from_polygon():
+def test_room_from_polygon(gl_context):
     """Test from_polygon factory."""
     polygon = [(0, 0), (5, 0), (5, 5), (0, 5)]
     room = Room.from_polygon("Office", polygon)
     assert room.height == 3.0
 
 
-def test_room_meshes():
+def test_room_meshes(gl_context):
     """Test room meshes are created."""
     polygon = [(0, 0), (4, 0), (4, 3), (0, 3)]
     room = Room("TestRoom", polygon)
